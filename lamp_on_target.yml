@@ -1,0 +1,43 @@
+---
+- name: Install LAMP stack on target server
+  hosts: targetserver
+  become: yes
+
+  tasks:
+    - name: Install Apache, MariaDB and PHP packages
+      ansible.builtin.dnf:
+        name:
+          - httpd
+          - mariadb105-server
+          - php
+        state: present
+        update_cache: yes
+
+    - name: Start and enable Apache and MariaDB services
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        state: started
+        enabled: true
+      loop:
+        - httpd
+        - mariadb
+
+    - name: Deploy index.html file
+      ansible.builtin.copy:
+        dest: /var/www/html/index.html
+        owner: apache
+        group: apache
+        mode: '0644'
+        content: |
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>LAMP Server</title>
+          </head>
+          <body>
+              <h1>LAMP Stack Installed Successfully</h1>
+              <p>Apache Web Server is running.</p>
+              <p>MariaDB Database is installed.</p>
+              <p>PHP is installed on this server.</p>
+          </body>
+          </html>
